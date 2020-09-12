@@ -1,4 +1,5 @@
-Basic React and NodeJS app to explore the world of Arbitrage Trading. 
-This version uses just 2 crypto brokers/exchanges:
-1. valr.com
-1. crypto.com
+Sample Arbitour service that integrates with 2 brokers/exchanges
+* valr.com
+* crypto.com
+
+Check out the Arbitrage-How-To-Guide in this repo that covers the user flow that this app is going to try support/automate.
