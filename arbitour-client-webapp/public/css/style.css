@@ -220,7 +220,7 @@ footer.footer .container {
 footer.footer .container > div {
     flex-grow: 1;
     flex-basis: 0;
-    padding: 3rem .9rem;
+    padding: 1rem .9rem;
 }
 
 footer.footer .container h2 {
