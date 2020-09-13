@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default ({ currencyPair, entryType }) => {
+const zarNumberFormatter = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumSignificantDigits: 15 });
+
+export default ({ exchangeName, currencyPair, entryType }) => {
     const [orderBook, setOrderBook] = useState('');
+    const [openTrades, setOpenTrades] = useState('');
 
     const fetchOrderBookForCurrencyPair = () => {
-        axios.get(`http://localhost:9000/${currencyPair}/orderbook`, { timeout: 3000 })
+        axios.get(`http://localhost:9000/${currencyPair}/orderbook/5`, { timeout: 3000 })
         .then((response) => {
             if (response && response.data) {
                 setOrderBook(response.data);
@@ -15,38 +18,74 @@ export default ({ currencyPair, entryType }) => {
         })
         .catch(error => {
           console.log(`Failed to retrieve order book data for ${currencyPair}. Error: ` + error);
-          // console.log(error);
         });
+    };
+
+    const fetchOpenTradesForCurrencyPair = () => {
+        setOpenTrades({});
     };
 
     useEffect(() => {
         fetchOrderBookForCurrencyPair();
+        fetchOpenTradesForCurrencyPair();
     }, []);
 
-    if (!orderBook.asks) {
-        return <div>Data missing</div>;
-    }
-
-    const renderedAsks = (<div>
-        <h3>{currencyPair}: Ask Prices</h3>
-        <i>Last change: {orderBook.lastChange}</i>
+    const renderedAsks = <div className="order-book asks">
+        <h3>{exchangeName}: Seller Asks</h3>
+        <div className="post-info-red flex-row">
+            <span>
+                <i className="fa fa-money-bill-alt text-gray"></i>
+                &nbsp;&nbsp;{currencyPair}
+            </span>
+            <span>
+                <i className="fa fa-handshake text-gray"></i>
+                &nbsp;&nbsp;
+                {(openTrades) && (openTrades > 0) ? openTrades : 0}
+            </span>
+        </div>
         <ul>
             {getRenderedPriceEntries(orderBook, true)}
         </ul>
-    </div>);
+        <i className="timestamp">Last change: {orderBook.lastChange}</i>
+        {/* <div className="post-info flex-row">
+            <span>
+                <i className="fa fa-list-alt text-gray"></i>
+                &nbsp;&nbsp;Show more
+            </span>
+        </div> */}
+    </div>;
 
-    const renderedBids = (<div>
-        <h3>{currencyPair}: Bid Prices</h3>
-        <i>Last change: {orderBook.lastChange}</i>
+    const renderedBids = <div className="order-book bids">
+        <h3>{exchangeName}: Buyer Bids</h3>
+        <div className="post-info-green">
+            <span>
+                <i className="fa fa-money-bill-alt text-gray"></i>
+                &nbsp;&nbsp;{currencyPair}
+            </span>
+            <span>
+                <i className="fa fa-handshake text-gray"></i>
+                &nbsp;&nbsp;
+                {(openTrades) && (openTrades > 0) ? openTrades : 0}
+            </span>
+        </div>
         <ul>
             {getRenderedPriceEntries(orderBook, false)}
         </ul>
-    </div>);
+        <i className="timestamp">Last change: {orderBook.lastChange}</i>
+        {/* <div className="post-info flex-row">
+            <span>
+                <i className="fa fa-list-alt text-gray"></i>
+                &nbsp;&nbsp;Show more
+            </span>
+        </div> */}
+    </div>;
 
     return (
-        <div className="d-flex flex-row flex-wrap justify-content-between">
-            <div className="card">
+        <div className="order-book">
+            <div>
                 {entryType === "Asks" ? renderedAsks : ''}
+            </div>
+            <div>
                 {entryType === "Bids" ? renderedBids : ''}
             </div>
         </div>
@@ -55,11 +94,16 @@ export default ({ currencyPair, entryType }) => {
 
 function getRenderedPriceEntries(orderBook, asksOnly) {
     if (!orderBook || (asksOnly && !orderBook.asks) | (!asksOnly && !orderBook.bids)) {
-        return <div className="card-body" key={orderBook.currencyPair}>No data</div>
+        return <div className="" key={orderBook.currencyPair}>No data</div>
     }
 
     const items = asksOnly ? orderBook.asks : orderBook.bids;
+
     return items.map(bookItem => {
-        return <li key={orderBook.currencyPair + "-" + bookItem.price}>{bookItem.price} / {bookItem.quantity}</li>
+        const price = zarNumberFormatter.format(bookItem.price);
+
+        return <li className="orde-book-entry" key={orderBook.currencyPair + "-" + bookItem.price}>
+            <i>{bookItem.orderCount}</i>x <i>{bookItem.quantity}</i> @ <i>{price}</i>
+            </li>
     });
 }

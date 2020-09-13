@@ -1,0 +1,70 @@
+.app-main-section {
+  /* border: 0.1px dashed; */
+  margin: 0.2rem;
+}
+
+.app-main-section .container {
+  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+  /* background-color: whitesmoke; */
+}
+
+.app-main-section .container > div {
+  flex-direction: column;
+  flex-grow: 2;
+  flex-basis: 0;
+  padding: 1rem .9rem;
+}
+
+.order-book {
+  overflow: scroll;
+}
+
+.order-book .asks {
+  /* background-color: whitesmoke; */
+  color: crimson;
+  width: max-content;
+}
+
+.order-book .bids {
+  /* background-color: whitesmoke; */
+  color: green;
+  width: max-content;
+}
+
+.post-info, .post-info-red, .post-info-green {
+  background: var(--sky);
+  padding: 0.1rem;
+  border-radius: 5rem;
+  width: max-content;
+}
+
+.post-info-green {
+  background: ligthgreen;
+}
+
+.post-info-red {
+  background: lightred;
+}
+
+.post-info, .post-info-green > span {
+  margin: .1rem .5rem;
+}
+
+.post-info, .post-info-red > span {
+  margin: .1rem .5rem;
+}
+
+.order-book .order-book-entry {
+  list-style-type: none;
+  /* border-top: 1px solid #e9ecef;
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: black;
+  padding-left: 10px;
+  position: relative;
+  transition: background .3s; */
+}
