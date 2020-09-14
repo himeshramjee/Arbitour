@@ -2,62 +2,65 @@ const express = require("express");
 const axios = require("axios");
 const app = express();
 const cors = require("cors");
+const security = require("./security/security");
+const valrService = require("./services/exchanges/valr-service");
+const cryptoDotComService = require("./services/exchanges/crypto-com-service");
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/:currencyPair/orderbook/:entryCount", async (req, res) => {
-  const orderBookData = { 
-    currencyPair : req.params.currencyPair,
-    asks : [],
-    bids : [],
-    lastChange : ""
-  };
+// https://kapeli.com/cheat_sheets/Axios.docset/Contents/Resources/Documents/index
+axios.interceptors.request.use(function (config) {
+  // Do something before request is sent
+  security.signValrRequest(config);
+  
+  console.log(config);
+  return config;
+}, function (error) {
+  // Do something with request error
+  return Promise.reject(error);
+});
 
-  await axios.get(`https://api.valr.com/v1/public/${orderBookData.currencyPair}/orderbook`, { timeout: 5000 })
-    .then(response => {
-      const orderBook = response.data;
+app.get("/exchange/auth/:exchangeName", (req, res) => {
+  let signedRequest;
 
-      orderBook.Asks.slice(0, req.params.entryCount).map(askItem => {
-        orderBookData.asks.push(askItem);
-      });
+  if (req.params.exchangeName.toLowerCase() === "valr") {
+    signedRequest = valrService.testRequestSigning();
+  } else if(req.params.exchangeName.toLowerCase() === "cryptocom") {
+    signedRequest = cryptoDotComService.testRequestSigning();
+  } else {
+    res.status(401).send({ "error": "Invalid exchange name: " + req.params.exchangeName });
+  }
 
-      orderBook.Bids.slice(0, req.params.entryCount).map(bidItem => {
-        orderBookData.bids.push(bidItem);
-      });
+  res.status(200).send(signedRequest);
+});
 
-      orderBookData.lastChange = orderBook.LastChange;
-    })
-    .catch(error => {
-      console.log(`Failed to retrieve order book data for ${orderBookData.currencyPair}. Error: ` + error);
-      // debuglog(error);
-    });
+app.get("/:exchangeName/:currencyPair/orderbook/:entryCount", async (req, res) => {
+  let orderBookData;
+
+  if (req.params.exchangeName.toLowerCase() === "valr") {
+    orderBookData = await valrService.getOrderBook(req.params.currencyPair);
+  } else if(req.params.exchangeName.toLowerCase() === "cryptocom") {
+    orderBookData = await cryptoDotComService.getOrderBook(req.params.currencyPair);
+  } else {
+    res.status(401).send({ "error": "Invalid exchange name: " + req.params.exchangeName });
+  }
+
+  // console.log(orderBookData);
 
   res.status(200).send(orderBookData);
 });
 
-app.get("/orders/open", async (req, res) => {
-  const openOrders = [{ 
-    orderId: "",
-    customerOrderId: "",
-    createdAt: "",
-    side: "",
-    currencyPair: "",
-    price: ""
-  }];
+app.get("/:exchangeName/orders/open", async (req, res) => {
+  let openOrders;
 
-  await axios.get(`https://api.valr.com/v1/orders/open`, { timeout: 500 })
-    .then(response => {
-      const ordersData = response.data;
-
-      ordersData.map(order => {
-        openOrders.push(order);
-      });
-    })
-    .catch(error => {
-      console.log(`Failed to retrieve open orders data. Error: ` + error);
-      // debuglog(error);
-    });
+  if (req.params.exchangeName.toLowerCase() === "valr") {
+    openOrders = await valrService.getOpenOrders();
+  } else if(req.params.exchangeName.toLowerCase() === "cryptocom") {
+    openOrders = await cryptoDotComService.getOpenOrders();
+  } else {
+    res.status(401).send({ "error": "Invalid exchange name: " + req.params.exchangeName });
+  }
 
   res.status(200).send(openOrders);
 });

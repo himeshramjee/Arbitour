@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const zarNumberFormatter = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumSignificantDigits: 15 });
+const zarNumberFormatter = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumSignificantDigits: 10 });
 
 export default ({ exchangeName, currencyPair, entryType }) => {
     const [orderBook, setOrderBook] = useState('');
     const [openTrades, setOpenTrades] = useState('');
 
     const fetchOrderBookForCurrencyPair = () => {
-        axios.get(`http://localhost:9000/${currencyPair}/orderbook/5`, { timeout: 3000 })
+        axios.get(`http://localhost:9000/${exchangeName}/${currencyPair}/orderbook/5`, { timeout: 5000 })
         .then((response) => {
             if (response && response.data) {
                 setOrderBook(response.data);

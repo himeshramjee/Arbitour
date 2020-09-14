@@ -1,26 +1,53 @@
-const fs = require('fs');
 const crypto = require('crypto');
+const cryptoJS = require("crypto-js");
+const secretStuff = require("./secrets.json");
 
-export default () => {
-  const API_KEY_HEADER_NAME = "X-VALR-API-KEY";
-  const REQUEST_SIGNATURE_HEADER_NAME = "X-VALR-SIGNATURE";
-  const REQUEST_TIMESTAMP_HEADER_NAME = "X-VALR-TIMESTAMP";
+exports.signValrRequest = function(request) {
+  const signatureTimestamp = Date.now().toString();
+  
+  request.sig = crypto
+    .createHmac("sha512", secretStuff.valr.apiSecret)
+    .update(signatureTimestamp)
+    .update(request.method.toUpperCase())
+    .update(request.url)
+    .update(getParamsString(request.params))
+    .digest("hex");
 
-  const secrets = JSON.parse(fs.readFileSync('secrets.json'));
+  let header = request.method === "get" ? request.headers.get : request.headers.post;
 
-  function signRequest(apiSecret, timestamp, verb, path, body = '') {
-      return crypto
-        .createHmac("sha512", apiSecret)
-        .update(timestamp.toString())
-        .update(verb.toUpperCase())
-        .update(path)
-        .update(body)
-        .digest("hex");
-  }
+  header = {
+    "X-VALR-API-KEY": secretStuff.valr.apiKey,
+    "X-VALR-SIGNATURE": request.sig,
+    "X-VALR-TIMESTAMP": signatureTimestamp
+  };
 
-  function getSignedRequest(request) {
-    
+  request.headers = header;
 
-    return request;
-  }
+  return request;
+};
+
+exports.signCryptoComRequest = function (request) {
+  const signatureTimestamp = Date.now().toString();
+  const { id, method } = request;
+  const sigPayload = method + id + secretStuff["crypto.com"].apiKey + getParamsString(request.params) + signatureTimestamp;
+
+  request.sig = cryptoJS
+    .HmacSHA256(sigPayload, secretStuff["crypto.com"].apiSecret)
+    .toString(cryptoJS.enc.Hex);
+
+  request.nonce = signatureTimestamp;
+  
+  request.api_key = secretStuff["crypto.com"].apiKey;
+
+  return request;
+};
+
+function getParamsString(params) {
+  return params == null
+      ? ""
+      : Object.keys(params)
+          .sort()
+          .reduce((a, b) => {
+            return a + b + params[b];
+          }, "");
 }

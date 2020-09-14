@@ -11,10 +11,10 @@ export default () => {
                 <OrderBookContainer exchangeName="Valr" currencyPair="BTCZAR" entryType="Bids"/>
             </div>
             <div className="">
-                <OrderBookContainer exchangeName="Crypto.com" currencyPair="BTCZAR" entryType="Asks"/>
+                <OrderBookContainer exchangeName="Crypto" currencyPair="BTC_USDT" entryType="Asks"/>
             </div>
             <div className="">
-                <OrderBookContainer exchangeName="Crypto.com" currencyPair="BTCZAR" entryType="Bids"/>
+                <OrderBookContainer exchangeName="Crypto" currencyPair="BTC_USDT" entryType="Bids"/>
             </div>
         </div>
     </div>
