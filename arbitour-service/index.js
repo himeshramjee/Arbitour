@@ -14,7 +14,7 @@ axios.interceptors.request.use(function (config) {
   // Do something before request is sent
   security.signValrRequest(config);
   
-  console.log(config);
+  // console.log(config);
   return config;
 }, function (error) {
   // Do something with request error
@@ -39,9 +39,9 @@ app.get("/:exchangeName/:currencyPair/orderbook/:entryCount", async (req, res) =
   let orderBookData;
 
   if (req.params.exchangeName.toLowerCase() === "valr") {
-    orderBookData = await valrService.getOrderBook(req.params.currencyPair);
+    orderBookData = await valrService.getOrderBook(req.params.currencyPair, req.params.entryCount);
   } else if(req.params.exchangeName.toLowerCase() === "cryptocom") {
-    orderBookData = await cryptoDotComService.getOrderBook(req.params.currencyPair);
+    orderBookData = await cryptoDotComService.getOrderBook(req.params.currencyPair, req.params.entryCount);
   } else {
     res.status(401).send({ "error": "Invalid exchange name: " + req.params.exchangeName });
   }

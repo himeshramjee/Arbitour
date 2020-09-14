@@ -32,7 +32,7 @@ exports.getOrderBook = async (currencyPair, entryCount) => {
   await axios.get(`https://api.valr.com/v1/public/${currencyPair}/orderbook`, { timeout: 5000 })
     .then(response => {
       const orderBook = response.data;
-
+      console.log("Entry count: " + entryCount);
       orderBook.Asks.slice(0, entryCount).map(askItem => {
         orderBookData.asks.push(askItem);
       });
